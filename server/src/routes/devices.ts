@@ -1,6 +1,7 @@
 import { Router, Response } from "express";
 import { AppDataSource } from "../data-source";
 import { Device, DeviceStatus } from "../entities/Device";
+import { Loan, LoanStatus } from "../entities/Loan";
 import { requireAuth, AuthRequest } from "../middleware/auth";
 import { requireAdmin } from "../middleware/roleGuard";
 
@@ -8,8 +9,13 @@ const router = Router();
 
 // No auth — kiosk needs this without a session
 router.get("/available-count", async (_req, res: Response) => {
-  const repo = AppDataSource.getRepository(Device);
-  const available = await repo.count({ where: { status: DeviceStatus.AVAILABLE } });
+  const deviceRepo = AppDataSource.getRepository(Device);
+  const loanRepo = AppDataSource.getRepository(Loan);
+  const [totalAvailable, pendingReservations] = await Promise.all([
+    deviceRepo.count({ where: { status: DeviceStatus.AVAILABLE } }),
+    loanRepo.count({ where: { status: LoanStatus.RESERVED } }),
+  ]);
+  const available = Math.max(0, totalAvailable - pendingReservations);
   res.json({ available });
 });
 

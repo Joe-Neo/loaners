@@ -3,13 +3,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const data_source_1 = require("../data-source");
 const Device_1 = require("../entities/Device");
+const Loan_1 = require("../entities/Loan");
 const auth_1 = require("../middleware/auth");
 const roleGuard_1 = require("../middleware/roleGuard");
 const router = (0, express_1.Router)();
 // No auth — kiosk needs this without a session
 router.get("/available-count", async (_req, res) => {
-    const repo = data_source_1.AppDataSource.getRepository(Device_1.Device);
-    const available = await repo.count({ where: { status: Device_1.DeviceStatus.AVAILABLE } });
+    const deviceRepo = data_source_1.AppDataSource.getRepository(Device_1.Device);
+    const loanRepo = data_source_1.AppDataSource.getRepository(Loan_1.Loan);
+    const [totalAvailable, pendingReservations] = await Promise.all([
+        deviceRepo.count({ where: { status: Device_1.DeviceStatus.AVAILABLE } }),
+        loanRepo.count({ where: { status: Loan_1.LoanStatus.RESERVED } }),
+    ]);
+    const available = Math.max(0, totalAvailable - pendingReservations);
     res.json({ available });
 });
 router.use(auth_1.requireAuth);
