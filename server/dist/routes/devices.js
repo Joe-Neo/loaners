@@ -6,6 +6,12 @@ const Device_1 = require("../entities/Device");
 const auth_1 = require("../middleware/auth");
 const roleGuard_1 = require("../middleware/roleGuard");
 const router = (0, express_1.Router)();
+// No auth — kiosk needs this without a session
+router.get("/available-count", async (_req, res) => {
+    const repo = data_source_1.AppDataSource.getRepository(Device_1.Device);
+    const available = await repo.count({ where: { status: Device_1.DeviceStatus.AVAILABLE } });
+    res.json({ available });
+});
 router.use(auth_1.requireAuth);
 router.get("/", async (_req, res) => {
     const repo = data_source_1.AppDataSource.getRepository(Device_1.Device);

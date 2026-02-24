@@ -60,9 +60,16 @@ async function seed() {
 
   // Create sample students
   const sampleStudents = [
-    { studentId: "STU001", fullName: "Alice Johnson", email: "alice@school.edu", tutorGroup: "10A" },
-    { studentId: "STU002", fullName: "Bob Smith", email: "bob@school.edu", tutorGroup: "10B" },
-    { studentId: "STU003", fullName: "Charlie Brown", email: "charlie@school.edu", tutorGroup: "11A" },
+    { studentId: "STU001", fullName: "Alice Johnson", tutorGroup: "10A" },
+    { studentId: "STU002", fullName: "Bob Smith", tutorGroup: "10B" },
+    { studentId: "STU003", fullName: "Charlie Brown", tutorGroup: "11A" },
+    { studentId: "STU004", fullName: "Emma Wilson", tutorGroup: "10A" },
+    { studentId: "STU005", fullName: "Liam Patel", tutorGroup: "10B" },
+    { studentId: "STU006", fullName: "Sophie Nguyen", tutorGroup: "11A" },
+    { studentId: "STU007", fullName: "James Okafor", tutorGroup: "11B" },
+    { studentId: "STU008", fullName: "Mia Chen", tutorGroup: "12A" },
+    { studentId: "STU009", fullName: "Noah Thompson", tutorGroup: "12B" },
+    { studentId: "STU010", fullName: "Isla Mackenzie", tutorGroup: "9A" },
   ];
   for (const s of sampleStudents) {
     const exists = await studentRepo.findOne({ where: { studentId: s.studentId } });
@@ -70,7 +77,7 @@ async function seed() {
       await studentRepo.save(studentRepo.create(s));
     }
   }
-  console.log("Created 3 sample students");
+  console.log("Created 10 sample students");
 
   await AppDataSource.destroy();
   console.log("Seed complete.");
