@@ -29,10 +29,14 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 });
 
 router.put("/:id", async (req: AuthRequest, res: Response) => {
+  const targetId = parseInt(req.params.id);
   const repo = AppDataSource.getRepository(Staff);
-  const staff = await repo.findOne({ where: { id: parseInt(req.params.id) } });
+  const staff = await repo.findOne({ where: { id: targetId } });
   if (!staff) return res.status(404).json({ error: "Not found" });
   const { username, email, password, role, isActive } = req.body;
+  if (isActive === false && targetId === req.user!.id) {
+    return res.status(403).json({ error: "You cannot disable your own account" });
+  }
   if (username) staff.username = username;
   if (email) staff.email = email;
   if (password) staff.passwordHash = await bcrypt.hash(password, 10);
@@ -43,8 +47,12 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 });
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
+  const targetId = parseInt(req.params.id);
+  if (targetId === req.user!.id) {
+    return res.status(403).json({ error: "You cannot disable your own account" });
+  }
   const repo = AppDataSource.getRepository(Staff);
-  const staff = await repo.findOne({ where: { id: parseInt(req.params.id) } });
+  const staff = await repo.findOne({ where: { id: targetId } });
   if (!staff) return res.status(404).json({ error: "Not found" });
   staff.isActive = false;
   await repo.save(staff);

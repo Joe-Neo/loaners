@@ -61,11 +61,15 @@ router.post("/", async (req, res) => {
     res.status(201).json({ data: { id: staff.id, username: staff.username, email: staff.email, role: staff.role } });
 });
 router.put("/:id", async (req, res) => {
+    const targetId = parseInt(req.params.id);
     const repo = data_source_1.AppDataSource.getRepository(Staff_1.Staff);
-    const staff = await repo.findOne({ where: { id: parseInt(req.params.id) } });
+    const staff = await repo.findOne({ where: { id: targetId } });
     if (!staff)
         return res.status(404).json({ error: "Not found" });
     const { username, email, password, role, isActive } = req.body;
+    if (isActive === false && targetId === req.user.id) {
+        return res.status(403).json({ error: "You cannot disable your own account" });
+    }
     if (username)
         staff.username = username;
     if (email)
@@ -80,8 +84,12 @@ router.put("/:id", async (req, res) => {
     res.json({ data: { id: staff.id, username: staff.username, email: staff.email, role: staff.role, isActive: staff.isActive } });
 });
 router.delete("/:id", async (req, res) => {
+    const targetId = parseInt(req.params.id);
+    if (targetId === req.user.id) {
+        return res.status(403).json({ error: "You cannot disable your own account" });
+    }
     const repo = data_source_1.AppDataSource.getRepository(Staff_1.Staff);
-    const staff = await repo.findOne({ where: { id: parseInt(req.params.id) } });
+    const staff = await repo.findOne({ where: { id: targetId } });
     if (!staff)
         return res.status(404).json({ error: "Not found" });
     staff.isActive = false;
