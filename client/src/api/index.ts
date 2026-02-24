@@ -31,6 +31,7 @@ export const api = {
     request<{ data: any }>("/students", { method: "POST", body: JSON.stringify(data) }),
 
   // Devices
+  getAvailableCount: () => request<{ available: number }>("/devices/available-count"),
   getDevices: () => request<{ data: any[] }>("/devices"),
   lookupDevice: (params: { barcode?: string; qrCode?: string; assetNumber?: string }) => {
     const q = new URLSearchParams(params as any).toString();

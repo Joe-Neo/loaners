@@ -20,7 +20,7 @@ export default function KioskSuccess() {
         </p>
       )}
       <p className="text-green-200 text-lg mb-8">
-        Please collect your loaner laptop from ICT staff.
+        Please go to ICT to pick up your laptop.
       </p>
       {state?.reason && (
         <div className="bg-green-700 rounded-xl px-6 py-4 text-sm text-left space-y-1 mb-10">

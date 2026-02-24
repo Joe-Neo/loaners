@@ -5,6 +5,14 @@ import { requireAuth, AuthRequest } from "../middleware/auth";
 import { requireAdmin } from "../middleware/roleGuard";
 
 const router = Router();
+
+// No auth — kiosk needs this without a session
+router.get("/available-count", async (_req, res: Response) => {
+  const repo = AppDataSource.getRepository(Device);
+  const available = await repo.count({ where: { status: DeviceStatus.AVAILABLE } });
+  res.json({ available });
+});
+
 router.use(requireAuth);
 
 router.get("/", async (_req: AuthRequest, res: Response) => {

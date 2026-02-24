@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../api";
@@ -6,6 +6,7 @@ import { api } from "../../api";
 export default function KioskHome() {
   const navigate = useNavigate();
   const { user, exitKiosk } = useAuth();
+  const [availableCount, setAvailableCount] = useState<number | null>(null);
   const [showExitModal, setShowExitModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [exitPassword, setExitPassword] = useState("");
@@ -16,6 +17,10 @@ export default function KioskHome() {
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const { login, enterKiosk } = useAuth();
+
+  useEffect(() => {
+    api.getAvailableCount().then((res) => setAvailableCount(res.available)).catch(() => setAvailableCount(null));
+  }, []);
 
   const handleExitKiosk = async () => {
     if (!exitPassword) return;
@@ -69,12 +74,22 @@ export default function KioskHome() {
       </div>
 
       <div className="w-full max-w-lg px-6">
-        <button
-          onClick={() => navigate("/kiosk/checkout")}
-          className="w-full py-10 text-3xl font-bold bg-green-500 hover:bg-green-400 active:bg-green-600 rounded-2xl shadow-lg transition-colors"
-        >
-          Request a Laptop
-        </button>
+        {availableCount === 0 ? (
+          <div className="w-full py-10 text-center bg-blue-800 rounded-2xl shadow-lg px-6">
+            <p className="text-2xl font-bold text-white mb-2">No loaner laptops are currently available.</p>
+            <p className="text-blue-300 text-lg">Please see ICT staff for assistance.</p>
+          </div>
+        ) : (
+          <button
+            onClick={() => navigate("/kiosk/checkout")}
+            className="w-full py-10 text-3xl font-bold bg-green-500 hover:bg-green-400 active:bg-green-600 rounded-2xl shadow-lg transition-colors"
+          >
+            Request a Laptop
+            {availableCount !== null && (
+              <span className="block text-lg font-normal text-green-100 mt-1">{availableCount} available</span>
+            )}
+          </button>
+        )}
       </div>
 
       <p className="mt-12 text-blue-400 text-sm text-center px-6">
