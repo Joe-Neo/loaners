@@ -7,12 +7,26 @@ import type { DashboardStats } from "../../types";
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [resetting, setResetting] = useState(false);
 
-  useEffect(() => {
+  const fetchStats = () =>
     api.getStats()
       .then((res) => setStats(res.data))
       .finally(() => setLoading(false));
-  }, []);
+
+  useEffect(() => { fetchStats(); }, []);
+
+  const handleReset = async () => {
+    if (!window.confirm("Reset all loans and device statuses? This cannot be undone.")) return;
+    setResetting(true);
+    try {
+      await api.resetData();
+      setLoading(true);
+      await fetchStats();
+    } finally {
+      setResetting(false);
+    }
+  };
 
   const cards = stats
     ? [
@@ -26,7 +40,16 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <button
+          onClick={handleReset}
+          disabled={resetting}
+          className="text-xs px-3 py-1.5 rounded border border-red-300 text-red-500 hover:bg-red-50 disabled:opacity-50 transition-colors"
+        >
+          {resetting ? "Resetting..." : "Reset Data (Testing)"}
+        </button>
+      </div>
       {loading ? (
         <p className="text-gray-500">Loading stats...</p>
       ) : (

@@ -79,6 +79,7 @@ export const api = {
 
   // Dashboard
   getStats: () => request<{ data: any }>("/dashboard/stats"),
+  resetData: () => request<{ data: any }>("/dashboard/reset", { method: "POST" }),
 
   // Staff
   getStaff: () => request<{ data: any[] }>("/staff"),

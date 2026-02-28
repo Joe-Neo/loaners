@@ -46,7 +46,7 @@ async function seed() {
     const staffRepo = data_source_1.AppDataSource.getRepository(Staff_1.Staff);
     const deviceRepo = data_source_1.AppDataSource.getRepository(Device_1.Device);
     const studentRepo = data_source_1.AppDataSource.getRepository(Student_1.Student);
-    // Create admin account
+    // Create admin account (always ensure active)
     const existing = await staffRepo.findOne({ where: { username: "admin" } });
     if (!existing) {
         const admin = staffRepo.create({
@@ -54,9 +54,14 @@ async function seed() {
             email: "admin@school.edu",
             passwordHash: await bcrypt.hash("admin123", 10),
             role: Staff_1.StaffRole.ADMIN,
+            isActive: true,
         });
         await staffRepo.save(admin);
         console.log("Created admin account: admin / admin123");
+    }
+    else {
+        await staffRepo.update(existing.id, { isActive: true });
+        console.log("Ensured admin account is active");
     }
     // Create sample staff
     const staffExists = await staffRepo.findOne({ where: { username: "staff1" } });

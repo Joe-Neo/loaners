@@ -3,6 +3,7 @@ import { AppDataSource } from "../data-source";
 import { Device, DeviceStatus } from "../entities/Device";
 import { Loan, LoanStatus } from "../entities/Loan";
 import { requireAuth, AuthRequest } from "../middleware/auth";
+import { requireAdmin } from "../middleware/roleGuard";
 import { In } from "typeorm";
 
 const router = Router();
@@ -27,6 +28,23 @@ router.get("/stats", async (_req: AuthRequest, res: Response) => {
     .getCount();
 
   res.json({ data: { available, checkedOut, maintenance, reserved, overdue } });
+});
+
+router.post("/reset", requireAdmin, async (_req: AuthRequest, res: Response) => {
+  const loanRepo = AppDataSource.getRepository(Loan);
+  const deviceRepo = AppDataSource.getRepository(Device);
+
+  await loanRepo.delete({});
+  await deviceRepo
+    .createQueryBuilder()
+    .update(Device)
+    .set({ status: DeviceStatus.AVAILABLE })
+    .where("status IN (:...statuses)", {
+      statuses: [DeviceStatus.CHECKED_OUT, DeviceStatus.RESERVED],
+    })
+    .execute();
+
+  res.json({ data: { message: "Data reset successfully" } });
 });
 
 export default router;
